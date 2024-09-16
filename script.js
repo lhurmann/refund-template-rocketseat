@@ -4,6 +4,8 @@ const expense = document.querySelector('#expense')
 const category = document.querySelector('#category')
 
 const expenseList = document.querySelector('ul')
+const expensesTotal = document.querySelector('aside header h2')
+const expensesQuantity = document.querySelector('aside header p span')
 
 amount.oninput = () => {
   let value = amount.value.replace(/\D/g, "")
@@ -59,11 +61,54 @@ function expenseAdd(newExpense) {
     expenseAmount.classList.add('expense-amount')
     expenseAmount.innerHTML = `<small>R$</small>${newExpense.amount.toUpperCase().replace('R$', '')}`
 
-    expenseItem.append(expenseIcon, expenseInfo, expenseAmount)
+    const removeIcon = document.createElement('img')
+    removeIcon.classList.add('remove-icon')
+    removeIcon.setAttribute('src', 'img/remove.svg')
+    removeIcon.setAttribute('alt', 'remover')
+
+    expenseItem.append(expenseIcon, expenseInfo, expenseAmount, removeIcon)
     expenseList.append(expenseItem)
+
+    updateTotals()
 
   } catch (error) {
     alert('Não foi possível atualizar a lista de despesas.')
     console.log(error)
+  }
+}
+
+function updateTotals() {
+  try {
+    const items = expenseList.children
+    expensesQuantity.textContent = `${items.length} ${items.length > 1 ? 'despesas' : 'despesa'}`
+
+    let total = 0
+
+    for (let i = 0; i < items.length; i++) {
+      const itemAmount = items[i].querySelector('.expense-amount')
+
+      let value = itemAmount.textContent.replace(/[^\d,]/g, '').replace(',', '.')
+
+      value = parseFloat(value)
+
+      if (isNaN(value)) {
+        return alert('Não foi possível calcular o total. O valor não parecer ser um número.')
+      }
+
+      total += Number(value)
+    }
+
+    const symbolBRL = document.createElement('small')
+    symbolBRL.textContent = 'R$'
+
+    total = formatCurrencyBRL(total).toUpperCase().replace('R$', '')
+
+    expensesTotal.innerHTML = ''
+
+    expensesTotal.append(symbolBRL, total)
+
+  } catch (error) {
+    console.log(error)
+    alert('Não foi possível atualizar os totais.')
   }
 }
